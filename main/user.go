@@ -84,6 +84,27 @@ func (u *User) DoMessgae(msg string) {
 			u.Name = newName
 			u.sendMessage("成功修改用户名为：" + u.Name + "\n")
 		}
+	} else if len(msg) > 4 && msg[:3] == " to|" {
+		// 私聊消息格式： to|张三|消息内容
+		//1 获取对方的用户名
+		remoteName := strings.Split(msg, "|")[1]
+		if remoteName == "" {
+			u.sendMessage("消息格式不正确，请使用 to|张三|你好啊 \n")
+			return
+		}
+		//2 根据用户名，得到对方的User对象
+		remotUser, ok := u.server.OnlineMap[remoteName]
+		if !ok {
+			u.sendMessage("私聊用户不存在\n")
+			return
+		}
+		//3 获取消息内容， 通过对方的User将消息发送过去
+		content := strings.Split(msg, "|")[2]
+		if content == "" {
+			u.sendMessage("无消息内容，清确认重发\n")
+			return
+		}
+		remotUser.sendMessage(u.Name + "对你说" + content)
 	} else {
 		u.server.BroadCast(u, msg)
 	}
